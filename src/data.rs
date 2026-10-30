@@ -1,5 +1,7 @@
 // Loading and saving game data.
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use crate::board::{Cell, SIZE, new_board, Board};
 
 pub const MIN_SHIP: usize = 2;
@@ -185,8 +187,27 @@ pub fn load_board(path: &str) -> Option<Board> {
 // Replace commas in the name with spaces so the line stays parseable.
 // Return true if the write succeeded; on failure print the error to stderr
 // and return false.
-pub fn append_score(_path: &str, _record: &ScoreRecord) -> bool {
-    todo!("Task 6: append_score")
+pub fn append_score(path: &str, record: &ScoreRecord) -> bool {
+    let safe_name = record.name.replace(',', " ");
+    
+    let file_result = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path);
+        
+    match file_result {
+        Ok(mut file) => {
+            if let Err(e) = writeln!(file, "{},{}", safe_name, record.score) {
+                eprintln!("Failed to write score: {}", e);
+                return false;
+            }
+            true
+        }
+        Err(e) => {
+            eprintln!("Failed to open scores file: {}", e);
+            false
+        }
+    }
 }
 
 // Task 7.
@@ -199,14 +220,3 @@ pub fn load_scores(_path: &str) -> Vec<ScoreRecord> {
 
 // TEMPORARY: lets the game run before load_fleet works.
 // Task 5 replaces the call in main.rs; then delete this function.
-pub fn default_fleet() -> Vec<ShipSpec> {
-    let lengths = [5, 4, 3, 3, 2];
-    let mut fleet = Vec::new();
-    for length in lengths {
-        fleet.push(ShipSpec {
-            name: format!("Ship{length}"),
-            length,
-        });
-    }
-    fleet
-}
