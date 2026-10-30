@@ -1,6 +1,6 @@
 // Loading and saving game data.
-use crate::board::Board;
 use std::fs;
+use crate::board::{Cell, SIZE, new_board, Board};
 
 pub const MIN_SHIP: usize = 2;
 pub const MAX_SHIP: usize = 5;
@@ -122,8 +122,41 @@ pub fn load_fleet(path: &str) -> Vec<ShipSpec> {
 // starting with '#' are ignored. Return None for too few rows, too many rows,
 // a row of the wrong width, or any other character.
 // Start from board::new_board() and fill in board[row][col].
-pub fn parse_board(_text: &str) -> Option<Board> {
-    todo!("Task 3: parse_board")
+pub fn parse_board(text: &str) -> Option<Board> {
+    let mut board = new_board();
+    let mut row_count = 0;
+    
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        
+        if row_count >= SIZE {
+            return None; // Too many rows
+        }
+        
+        let chars: Vec<char> = line.chars().collect();
+        if chars.len() != SIZE {
+            return None; // Row width is not exactly 10
+        }
+        
+        for col in 0..SIZE {
+            match chars[col] {
+                '.' => board[row_count][col] = Cell::Water,
+                'S' => board[row_count][col] = Cell::Ship,
+                _ => return None, // Invalid character
+            }
+        }
+        
+        row_count += 1;
+    }
+    
+    if row_count != SIZE {
+        return None; // Too few rows
+    }
+    
+    Some(board)
 }
 
 // Task 4.
