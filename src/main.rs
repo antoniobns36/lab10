@@ -4,6 +4,7 @@ use battleship::ui;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
+const PRACTICE_PATH: &str = "data/boards/practice.txt";
 const FLEET_PATH: &str = "data/fleet.txt";
 // TODO (Task 6): add SCORES_PATH ("data/scores.txt").
 // TODO (Task 8): add PRACTICE_PATH ("data/boards/practice.txt").
@@ -12,7 +13,7 @@ const TOP_N: usize = 5;
 fn main() {
     // TODO (Task 5): replace default_fleet() with data::load_fleet(FLEET_PATH),
     // then delete default_fleet from data.rs.
-    let fleet = data::default_fleet();
+    let fleet = data::load_fleet(FLEET_PATH);
     if fleet.is_empty() {
         println!("No fleet loaded. Check {FLEET_PATH}.");
         return;
@@ -66,6 +67,16 @@ fn play_game(fleet: &[ShipSpec]) {
 
 // An unscored game on the fixed layout in the practice file.
 fn practice_game() {
+    match data::load_board(PRACTICE_PATH) {
+        Some(mut board) => {
+            if let Some(shots) = play_round(&mut board) {
+                println!("Practice board cleared in {} shots.", shots);
+            }
+        }
+        None => {
+            println!("Practice board unavailable.");
+        }
+    }
     // TODO (Task 8): load the board with data::load_board(PRACTICE_PATH). On
     // Some(mut board), play it with play_round and print
     // "Practice board cleared in N shots." when play_round returns Some(N).
